@@ -1,4 +1,4 @@
-Create three folders named: excels, graphs, weights.
+RFFocus: Radial Filtration as topological filter method, implemented to bounding box.
 
 Then change data folders in the code. 
 
