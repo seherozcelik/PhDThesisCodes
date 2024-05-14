@@ -1,3 +1,5 @@
+baseMulty: Network with cross-entropy loss - multy-class segmentation.
+
 Create three folders named: excels, graphs, weights.
 
 Then change data folders in the code.
