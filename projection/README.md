@@ -1,4 +1,4 @@
-Create three folders named: excels, graphs, weights.
+projection: A novel shape preserving method. Please see the PhD Thesis file.
 
 Then change data folders in the code. 
 
