@@ -1,3 +1,5 @@
+RF: Radial Filtration as topological filter method.
+
 Create three folders named: excels, graphs, weights.
 
 Then change data folders in the code. 
