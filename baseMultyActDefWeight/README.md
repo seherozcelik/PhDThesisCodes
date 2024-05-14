@@ -1,4 +1,4 @@
-Create three folders named: excels, graphs, weights, 20_excels, 20_weights, 25_excels, 25_weights. 
+baseMultyActDefWeight: Network with size-weight matrix * cross-entropy loss.
 
 Then change data folders in the code. 
 
