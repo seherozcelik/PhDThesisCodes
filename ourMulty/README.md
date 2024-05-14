@@ -1,4 +1,4 @@
-Create three folders named: excels, graphs, weights.
+ourMulty: Implementation of paper's method to multy-class segmentation dataset.
 
 Then change data folders in the code. 
 
