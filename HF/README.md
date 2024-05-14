@@ -1,3 +1,5 @@
+HF: Height Filtration as topological filter method, implemented to bounding box.
+
 Create three folders named: excels, graphs, weights.
 
 Then change data folders in the code.
