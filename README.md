@@ -1,4 +1,5 @@
-# PhDThesisCodes-other-than-paper-codes
+# PhDThesisCodesForChapters6-8
+This repository contains the implementations of the thesis other than our paper's code implementation, whose codes are in the TopologyAware repo.
 
 You may want to start with README.md file of TopologyAware folder which contains submitted paper codes.
 
