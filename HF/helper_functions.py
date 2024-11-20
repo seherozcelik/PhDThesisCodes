@@ -110,7 +110,7 @@ def getData(folder, gold_folder, chosen_data_file, cutting_regions_file):
 
     return data   
 
-def test(in_channel, first_out_channel, model_name, tst_im_name, gold_im_name, sh, eh, sw, ew):
+def test(in_channel, first_out_channel, model_name, tst_im_name, gold_im_name, sh=128, eh=384, sw=64, ew=448):
        
     model = UNet(in_channel,first_out_channel).cuda()
 
