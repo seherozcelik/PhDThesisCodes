@@ -56,9 +56,7 @@ def getResultsPixelwise(first_out_channel, gold_folder, ts_folder, model_name_pr
         model_name = model_name_pre + '_' + str(run_num) + '.pth'
         
     with open('../chosen_data_tst.json') as f:
-        chosen_data = json.load(f)     
-    with open('../cutting_regions_tst.json') as f:
-        cutting_regions = json.load(f)           
+        chosen_data = json.load(f)           
                 
     patients = os.listdir(ts_folder)
     for patient in patients:
@@ -66,8 +64,7 @@ def getResultsPixelwise(first_out_channel, gold_folder, ts_folder, model_name_pr
         for image in images:
             tst_im_name = ts_folder + '/' + patient + '/' + image
             gold_im_name = gold_folder + '/' + image.split('.')[0] + '.png'
-            [sh, eh, sw, ew] = cutting_regions[image]
-            im, _, prediction, gold = hp.test(1, first_out_channel, model_name, tst_im_name, gold_im_name, sh, eh, sw, ew)
+            im, _, prediction, gold = hp.test(1, first_out_channel, model_name, tst_im_name, gold_im_name)
 
             if np.sum(gold==clss)>0:
                 precision, recall, f_score, accuracy = getClasswiseScores(prediction, gold, clss)
