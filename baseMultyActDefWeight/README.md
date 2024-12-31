@@ -1,5 +1,7 @@
 baseMultyActDefWeight: Network with size-weight matrix * cross-entropy loss.
 
+Create five folders named: excels, graphs, weights, 20_weights, 25_weights.
+
 Then change data folders in the code. 
 
 I did not delete unused images; instead, I created chosen_data files and used those files while data loading.
