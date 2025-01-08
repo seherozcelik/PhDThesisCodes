@@ -1,5 +1,7 @@
 RFFocus: Radial Filtration as topological filter method, implemented to bounding box.
 
+Create three folders named: excels, graphs, weights.
+
 Then change data folders in the code. 
 
 I did not delete unused images; instead, I created chosen_data files and used those files while data loading.
