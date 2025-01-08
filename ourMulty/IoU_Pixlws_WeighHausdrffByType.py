@@ -56,7 +56,7 @@ def getResultsPixelwise(first_out_channel, gold_folder, ts_folder, model_name_pr
         model_name = model_name_pre + '_' + str(run_num) + '.pth'
         
     with open('../chosen_data_tst.json') as f:
-        chosen_data = json.load(f)          
+        chosen_data = json.load(f)        
                 
     patients = os.listdir(ts_folder)
     for patient in patients:

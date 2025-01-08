@@ -22,19 +22,16 @@ def getXYofboundary(im):
 def getXY(bnd):
     return np.transpose(np.nonzero(bnd))
 
-def getPairs(output, maxdim = 1):
+def getPairs(prediction, maxdim = 1):
     pairs = None
-    pre_prediction = output.detach().cpu().numpy()
-    prediction = np.argmax(pre_prediction, axis=0)
     prediction = np.uint8(prediction>0)
     prediction = prediction[64:,128:256]
     xy = getXYofboundary(prediction)
     if xy.shape[0]>0:
-        pairs= rpp.run("--format point-cloud --dim "+str(maxdim), xy)
-        
-    return pairs, xy.shape[0]
+        pairs= rpp.run("--format point-cloud --dim "+str(maxdim), xy)  
+    return pairs
 
-def prepare_gold_and_weights(label_name, dgms0_name, sh, eh, sw, ew):
+def prepare_gold_and_weights(label_name, dgms0_name, sh, eh, sw, ew,bounding_box_size):
     goldImage = cv2.imread(label_name,cv2.IMREAD_GRAYSCALE)
     goldImage = goldImage[sh:eh,sw:ew]
     
@@ -49,21 +46,15 @@ def prepare_gold_and_weights(label_name, dgms0_name, sh, eh, sw, ew):
     
     goldLabel = goldLabel.astype(np.float32)
    
-    weight, clss_weight_list = get_weight(goldImage,h,w)    
+    weight, clss_weight_list = get_weight(goldImage,h,w,bounding_box_size)    
 
-    return [goldLabel, dgms0_name, weight, clss_weight_list]
+    return goldLabel, dgms0_name, weight, clss_weight_list
 
-def getFalsePredMask(pred,gold):
-    pred = pred.detach().cpu().numpy()
-    pred = np.argmax(pred, axis=0)
-    pred = np.uint8(pred>0)
-    gold = np.argmax(gold, axis=0)
-    gold = pred = np.uint8(gold>0)
-    return np.where(gold+pred==1,1,0)
 
-def get_weight(goldImage,h,w):
+def get_weight(goldImage,h,w,bounding_box_size):
     clss_weights = [0,0,0,0,0]
-    clss_weights[0] = 2*(h+w)
+    clss_weights[0] = 2*(h+w) - bounding_box_size
+    
     norm = clss_weights[0]
     for i in [1,2,3,4]:
         im = np.where(goldImage==i,1,0)
@@ -85,6 +76,9 @@ def get_weight(goldImage,h,w):
     
     clss_weight_list = np.array(clss_weight_list).astype(np.float32)
     clss_weight_list = clss_weight_list / clss_weight_list.max()
+    
+    for i in range(5):
+        if clss_weight_list[i] == 0: clss_weight_list[i]=clss_weight_list[0]
                   
     return weight, clss_weight_list
 
@@ -97,13 +91,16 @@ def normalizeImage(img):
 
     return normImg.astype(np.float32)
 
-def getData(folder, gold_folder, chosen_data_file, cutting_regions_file):
+def getData(folder, gold_folder, chosen_data_file, cutting_regions_file,bounding_box_file):
     
     with open(chosen_data_file) as f:
         chosen_data = json.load(f) 
         
     with open(cutting_regions_file) as f:
-        cutting_regions = json.load(f)      
+        cutting_regions = json.load(f)     
+        
+    with open(bounding_box_file) as f:
+        bounding_box_regions = json.load(f)                      
 
     data = []
     
@@ -113,15 +110,17 @@ def getData(folder, gold_folder, chosen_data_file, cutting_regions_file):
         for image in images:
             [sh, eh, sw, ew] = cutting_regions[image]
             
+            [bbsh, bbeh, bbsw, bbew] = bounding_box_regions[image]
+            bounding_box_size = 2*((int(bbeh) - int(bbsh)) + (int(bbew) - int(bbsw)))            
+            
             im = pydicom.dcmread(folder + '/' + patient + '/' + image).pixel_array
             im = im[sh:eh,sw:ew]
             im = np.expand_dims(im,0)
             im = normalizeImage(im)
 
-            label = prepare_gold_and_weights(gold_folder + '/' + image.split('.')[0] + '.png',
-                                             gold_folder + '/dgms0/' + image.split('.')[0] + '.npy',sh, eh, sw, ew)
+            goldLabel, dgms0_name, weight, clss_weight_list = prepare_gold_and_weights(gold_folder + '/' + image.split('.')[0] + '.png', gold_folder + '/dgms0/' + image.split('.')[0] + '.npy',sh, eh, sw, ew, bounding_box_size)
 
-            data.append([im, label])
+            data.append([im, goldLabel, dgms0_name, np.expand_dims(weight,0), clss_weight_list])
 
     return data   
 
