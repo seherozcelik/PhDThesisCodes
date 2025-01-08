@@ -17,10 +17,10 @@ def getRFdgms(prediction,RF,CP):
     cubicalPersistence = CP.fit_transform(radialFiltration)
     return cubicalPersistence[0][:,:-1]
         
-def get_weight(goldImage,h,w):
+def get_weight(goldImage,h,w,bounding_box_size):
     size_weight = {}
     
-    size_weight['back'] = 2*(h+w)
+    size_weight['back'] = 2*(h+w) - bounding_box_size
     
     organ_list = ['heart','eso','spine', 'lungs']
 
@@ -41,11 +41,14 @@ def get_weight(goldImage,h,w):
             
     for key in size_weight.keys():
         size_weight[key] = size_weight[key]/maxAll  
+        
+    for organ in ['back', 'heart','eso','spine','lungs']:
+        if organ not in size_weight.keys(): size_weight[organ] = size_weight['back']        
             
     return size_weight
        
 
-def prepare_gold_and_weight(label_name, sh, eh, sw, ew):
+def prepare_gold_and_weight(label_name, sh, eh, sw, ew, bounding_box_size):
     goldImage = cv2.imread(label_name,cv2.IMREAD_GRAYSCALE)
     
     goldImage = goldImage[sh:eh,sw:ew]
@@ -61,7 +64,7 @@ def prepare_gold_and_weight(label_name, sh, eh, sw, ew):
 
     goldLabel = goldLabel.astype(np.float32)
     
-    size_weight = get_weight(goldImage, h,w)
+    size_weight = get_weight(goldImage, h,w, bounding_box_size)
 
     return goldLabel, size_weight
 
@@ -74,13 +77,16 @@ def normalizeImage(img):
 
     return normImg.astype(np.float32)
 
-def getData(folder, gold_folder, chosen_data_file, cutting_regions_file):
+def getData(folder, gold_folder, chosen_data_file, cutting_regions_file, bounding_box_file):
     
     with open(chosen_data_file) as f:
         chosen_data = json.load(f) 
         
     with open(cutting_regions_file) as f:
-        cutting_regions = json.load(f)      
+        cutting_regions = json.load(f)     
+        
+    with open(bounding_box_file) as f:
+        bounding_box_regions = json.load(f)                      
 
     data = []
     
@@ -90,12 +96,15 @@ def getData(folder, gold_folder, chosen_data_file, cutting_regions_file):
         for image in images:
             [sh, eh, sw, ew] = cutting_regions[image]
             
+            [bbsh, bbeh, bbsw, bbew] = bounding_box_regions[image]
+            bounding_box_size = 2*((int(bbeh) - int(bbsh)) + (int(bbew) - int(bbsw)))            
+            
             im = pydicom.dcmread(folder + '/' + patient + '/' + image).pixel_array
             im = im[sh:eh,sw:ew]
             im = np.expand_dims(im,0)
             im = normalizeImage(im)
 
-            label, size_weight = prepare_gold_and_weight(gold_folder + '/' + image.split('.')[0] + '.png', sh, eh, sw, ew)
+            label, size_weight = prepare_gold_and_weight(gold_folder + '/' + image.split('.')[0] + '.png', sh, eh, sw, ew, bounding_box_size)
 
             data.append([im, label, image.split('.')[0], size_weight])
 

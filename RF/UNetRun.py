@@ -22,7 +22,7 @@ for i in range(1,num_of_runs+1):
 
     model_name_pre = 'weights/allWeightsB2'
     initial_model_pre = '../baseMultyActDefWeight/25_weights/allWeightsB2'
-    alpha = 0.00000005
+    alpha = 0.0000001
     
     if i==1:
         model_name = model_name_pre + '.pth'

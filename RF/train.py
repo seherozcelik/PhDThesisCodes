@@ -38,8 +38,8 @@ def train(in_channel, first_out_channel, trn_folder, val_folder, gold_folder, lr
     optimizer = optim.Adadelta(model.parameters(),lr)
     optimizer.load_state_dict(torch.load(initial_model.split('.pth')[0]+'_optim.pth'))
    
-    train_loader = data.DataLoader(hp.getData(trn_folder, gold_folder, '../chosen_data_trn.json', '../cutting_regions_trn.json'),batch_size=1, shuffle=True)
-    val_loader = data.DataLoader(hp.getData(val_folder, gold_folder, '../chosen_data_val.json', '../cutting_regions_val.json'), batch_size=1)
+    train_loader = data.DataLoader(hp.getData(trn_folder, gold_folder, '../chosen_data_trn.json', '../cutting_regions_trn.json','../smallest_rectangle_trn.json'),batch_size=1, shuffle=True)
+    val_loader = data.DataLoader(hp.getData(val_folder, gold_folder, '../chosen_data_val.json', '../cutting_regions_val.json','../smallest_rectangle_val.json'), batch_size=1)
     
     RF = RadialFiltration(center=np.array([192, 128]))
 
@@ -87,6 +87,11 @@ def train(in_channel, first_out_channel, trn_folder, val_folder, gold_folder, lr
         if cnter >=patience:
             torch.save(weights, model_name)
             print('used loss: ', used_loss)
+            
+            time_dict = {'epoch_num':epoch,'time_passed':round(tot_time_passed/60),'time_per_epoch':round(tot_time_passed/(60*epoch))}
+            with open(model_name.split('.pth')[0]+"time.json", "w") as outfile:
+                json.dump(time_dict, outfile)                        
+                        
             break 
 
     return losses, val_losses  
