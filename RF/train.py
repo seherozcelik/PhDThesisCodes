@@ -21,8 +21,8 @@ def model_eval(model, data_loader, loss_func, RF, CP, alpha):
     loss = 0
     model.eval()
     with torch.no_grad():
-        for input, label, name, size_weight in data_loader:    
-            pred = model(input.cuda())
+        for inpt, label, name, size_weight in data_loader:    
+            pred = model(inpt.cuda())
             loss += loss_func(pred, label, name, size_weight, RF, CP, alpha)
         avrg_loss = loss / len(data_loader)  
         return avrg_loss   
@@ -56,8 +56,8 @@ def train(in_channel, first_out_channel, trn_folder, val_folder, gold_folder, lr
         start_time = time.time()
         loss_sum = 0
         model.train()
-        for input, label, name, size_weight in train_loader:
-            output = model(input.cuda())
+        for inpt, label, name, size_weight in train_loader:
+            output = model(inpt.cuda())
       
             optimizer.zero_grad()
         
