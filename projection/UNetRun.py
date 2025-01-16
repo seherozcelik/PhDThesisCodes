@@ -21,7 +21,7 @@ for i in range(1,num_of_runs+1):
     min_delta = 0.0
 
     model_name_pre = 'weights/allWeightsB2'
-    initial_model_pre = '../baseMultyActDefWeight/20_weights/allWeightsB2'
+    initial_model_pre = '../baseMultyActDefWeight/25_weights/allWeightsB2'
     
     
     if i==1:
