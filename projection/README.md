@@ -8,4 +8,4 @@ I cut images on the fly by using the numbers in the json files. You may want to 
 
 json files like: {"file_name.dcm": [131, 387, 62, 446], ...}
 
-You'll need to create diagrams and other things depending on gold images in advance and use them in training. CreateHelperData.ipynb contains everything you'll need.
+You'll need to create diagrams and other things depending on gold images in advance and use them in training. projectionsNew.ipynb contains everything you'll need.
