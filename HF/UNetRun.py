@@ -1,6 +1,6 @@
 from IPython.display import display_html
 display_html("<script>Jupyter.notebook.kernel.restart()</script>",raw=True)
-    
+
 num_of_runs = 1
 for i in range(1,num_of_runs+1):
     
@@ -44,6 +44,7 @@ for i in range(1,num_of_runs+1):
     uNetMain.callMain(in_channel, first_out_channel, trn_folder, val_folder, goldBinary_folder, lr, patience, min_delta, model_name, initial_model, alpha, cont, cont_model)
 
     from IPython.display import display_html
+    display_html("<script>Jupyter.notebook.kernel.restart()</script>",raw=True)
 
 import IoU_Pixlws_WeighHausdrffByType as evl
 goldBinary_folder = '../dataset/goldMulty'

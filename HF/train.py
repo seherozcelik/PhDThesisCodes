@@ -21,8 +21,8 @@ def model_eval(model, data_loader, loss_func, HF_list, CP, alpha, smallest_recta
     loss = 0
     model.eval()
     with torch.no_grad():
-        for input, label, name, size_weight in data_loader:    
-            pred = model(input.cuda())
+        for inpt, label, name, size_weight in data_loader:    
+            pred = model(inpt.cuda())
             [ssh, seh, ssw, sew] = smallest_rectangle[name[0]+'.dcm']
             [csh, ceh, csw, cew] = cutting_regions[name[0]+'.dcm']
             
@@ -63,8 +63,8 @@ def train(in_channel, first_out_channel, trn_folder, val_folder, gold_folder, lr
         model.load_state_dict(torch.load(initial_model))
         optimizer.load_state_dict(torch.load(initial_model.split('.pth')[0]+'_optim.pth'))    
    
-    train_loader = data.DataLoader(hp.getData(trn_folder, gold_folder, '../chosen_data_trn.json', '../cutting_regions_trn.json'),batch_size=1, shuffle=True)
-    val_loader = data.DataLoader(hp.getData(val_folder, gold_folder, '../chosen_data_val.json', '../cutting_regions_val.json'), batch_size=1)
+    train_loader = data.DataLoader(hp.getData(trn_folder, gold_folder, '../chosen_data_trn.json', '../cutting_regions_trn.json','../smallest_rectangle_trn.json'),batch_size=1, shuffle=True)
+    val_loader = data.DataLoader(hp.getData(val_folder, gold_folder, '../chosen_data_val.json', '../cutting_regions_val.json' ,'../smallest_rectangle_val.json'), batch_size=1)
     
     with open('../smallest_rectangle_trn.json') as f:
         smallest_rectangle = json.load(f) 
@@ -102,8 +102,8 @@ def train(in_channel, first_out_channel, trn_folder, val_folder, gold_folder, lr
         start_time = time.time()
         loss_sum = 0
         model.train()
-        for input, label, name, size_weight in train_loader:
-            output = model(input.cuda())
+        for inpt, label, name, size_weight in train_loader:
+            output = model(inpt.cuda())
       
             optimizer.zero_grad()
         
@@ -159,6 +159,11 @@ def train(in_channel, first_out_channel, trn_folder, val_folder, gold_folder, lr
         if cnter >=patience:
             torch.save(weights, model_name)
             print('used loss: ', used_loss)
+            
+            time_dict = {'epoch_num':epoch,'time_passed':round(tot_time_passed/60),'time_per_epoch':round(tot_time_passed/(60*epoch))}
+            with open(model_name.split('.pth')[0]+"time.json", "w") as outfile:
+                json.dump(time_dict, outfile)                                    
+            
             break 
 
     return losses, val_losses  
