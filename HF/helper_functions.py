@@ -20,8 +20,8 @@ def getHFdgms(prediction,clss,HF,CP):
     return cubicalPersistence[0][:,:-1]
 
 def getHFdgmsAll(prediction,HF,CP, sh, eh, sw, ew):
-    organ = np.where(prediction>0,1,0)[sh:eh, sw:ew]
-    heightFiltration = HF.fit_transform(organ[None, :, :])
+    im = np.where(prediction>0,1,0)[sh:eh, sw:ew]
+    heightFiltration = HF.fit_transform(im[None, :, :])
     cubicalPersistence = CP.fit_transform(heightFiltration)
     return cubicalPersistence[0][:,:-1]
 
