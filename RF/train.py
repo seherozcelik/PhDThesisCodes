@@ -17,13 +17,33 @@ from gtda.images import RadialFiltration
 
 import json
 
-def model_eval(model, data_loader, loss_func, RF, CP, alpha):
+def model_eval(model, data_loader, loss_func, CP, alpha,smallest_rectangle,cutting_regions):
     loss = 0
     model.eval()
     with torch.no_grad():
-        for inpt, label, name, size_weight in data_loader:    
-            pred = model(inpt.cuda())
-            loss += loss_func(pred, label, name, size_weight, RF, CP, alpha)
+        for input, label, name, size_weight in data_loader:    
+            pred = model(input.cuda())
+            [ssh, seh, ssw, sew] = smallest_rectangle[name[0]+'.dcm']
+            [csh, ceh, csw, cew] = cutting_regions[name[0]+'.dcm']
+            
+            if ssh<csh:
+                sh=0
+            else:
+                sh = ssh-csh
+            if seh>ceh:
+                eh=256
+            else:
+                eh = 256-(ceh-seh)
+            if ssw<csw:
+                sw=0
+            else:
+                sw = ssw-csw
+            if sew>cew:
+                sew=384
+            else:    
+                ew = 384-(cew-sew)
+
+            loss += loss_func(pred, label, name, size_weight, CP, alpha,sh, eh, sw, ew)
         avrg_loss = loss / len(data_loader)  
         return avrg_loss   
 
@@ -35,13 +55,25 @@ def train(in_channel, first_out_channel, trn_folder, val_folder, gold_folder, lr
 
     loss_func = WeightedCrossEntropyLoss()
 
-    optimizer = optim.Adadelta(model.parameters(),lr)
+    optimizer = optim.Adadelta(model.parameters(),lr)#,weight_decay=1
     optimizer.load_state_dict(torch.load(initial_model.split('.pth')[0]+'_optim.pth'))
    
     train_loader = data.DataLoader(hp.getData(trn_folder, gold_folder, '../chosen_data_trn.json', '../cutting_regions_trn.json','../smallest_rectangle_trn.json'),batch_size=1, shuffle=True)
     val_loader = data.DataLoader(hp.getData(val_folder, gold_folder, '../chosen_data_val.json', '../cutting_regions_val.json','../smallest_rectangle_val.json'), batch_size=1)
     
-    RF = RadialFiltration(center=np.array([192, 128]))
+    with open('../smallest_rectangle_trn.json') as f:
+        smallest_rectangle = json.load(f) 
+    with open('../smallest_rectangle_val.json') as f:
+        smallest_rectangle_tmp = json.load(f)     
+    smallest_rectangle.update(smallest_rectangle_tmp)
+    
+    with open('../cutting_regions_trn.json') as f:
+        cutting_regions = json.load(f) 
+    with open('../cutting_regions_val.json') as f:
+        cutting_regions_tmp = json.load(f)     
+    cutting_regions.update(cutting_regions_tmp)
+    
+    #RF = RadialFiltration(center=np.array([192, 128]))
 
     CP = CubicalPersistence(homology_dimensions=[0],coeff=3,n_jobs=-1)
 
@@ -61,7 +93,27 @@ def train(in_channel, first_out_channel, trn_folder, val_folder, gold_folder, lr
       
             optimizer.zero_grad()
         
-            loss = loss_func(output,label, name, size_weight, RF, CP,alpha)
+            [ssh, seh, ssw, sew] = smallest_rectangle[name[0]+'.dcm']
+            [csh, ceh, csw, cew] = cutting_regions[name[0]+'.dcm']
+            
+            if ssh<csh:
+                sh=0
+            else:
+                sh = ssh-csh
+            if seh>ceh:
+                eh=256
+            else:
+                eh = 256-(ceh-seh)
+            if ssw<csw:
+                sw=0
+            else:
+                sw = ssw-csw
+            if sew>cew:
+                sew=384
+            else:    
+                ew = 384-(cew-sew)      
+                
+            loss = loss_func(output,label, name, size_weight, CP, alpha, sh, eh, sw, ew)
 
             loss_sum += loss.item()
             loss.backward()
@@ -69,7 +121,7 @@ def train(in_channel, first_out_channel, trn_folder, val_folder, gold_folder, lr
 
         trainingLoss = loss_sum / l    
         losses.append(trainingLoss)
-        val_loss = model_eval(model, val_loader, loss_func, RF, CP, alpha);
+        val_loss = model_eval(model, val_loader, loss_func, CP, alpha,smallest_rectangle,cutting_regions);
         val_losses.append(val_loss.item())
         
         if min_val_loss > val_loss.item() + min_delta:
@@ -91,7 +143,7 @@ def train(in_channel, first_out_channel, trn_folder, val_folder, gold_folder, lr
             time_dict = {'epoch_num':epoch,'time_passed':round(tot_time_passed/60),'time_per_epoch':round(tot_time_passed/(60*epoch))}
             with open(model_name.split('.pth')[0]+"time.json", "w") as outfile:
                 json.dump(time_dict, outfile)                        
-                        
+            
             break 
 
     return losses, val_losses  

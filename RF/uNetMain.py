@@ -16,3 +16,10 @@ def callMain(in_channel, first_out_channel, trn_folder, val_folder, gold_folder,
     graph_name = model_name.split('/')
     graph_name = 'graphs/'+graph_name[len(graph_name)-1].split('.')[0]+'.png'
     plt.savefig(graph_name)
+    
+#    with open('graphs/loss_'+graph_name[len(graph_name)-1].split('.')[0]+'.txt', 'w') as f:
+#        for line in losses:
+#            f.write(f"{line}\n")
+#    with open('graphs/valLoss_'+graph_name[len(graph_name)-1].split('.')[0]+'.txt', 'w') as f:
+#        for line in val_losses:
+#            f.write(f"{line}\n")            
